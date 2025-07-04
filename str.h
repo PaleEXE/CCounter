@@ -18,12 +18,22 @@ typedef struct {
     size_t capacity, count;
 } ListStr;
 
-const Str to_str(char *str);
+Str to_str(char *str);
+
 ListStr list_new();
+
+ListStr list_with_capacity(size_t capacity);
+
 void str_print(const Str *str);
+
 bool compare(const Str *str1, const Str *str2);
+
 void resize(ListStr *list);
+
 void append(ListStr *list, Str str);
+
 ListStr split(char *text);
+
+void list_print(const ListStr * list);
 
 #endif //STR_H
