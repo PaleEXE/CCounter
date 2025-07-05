@@ -5,16 +5,18 @@
 #include <sys/stat.h>
 #include <string.h>
 
+#define MAX_PATH_ 512
+
 char **get_files_in_folder(const char *folder, size_t *out_count) {
-    char search_path[MAX_PATH];
-    snprintf(search_path, MAX_PATH, "%s\\*", folder);
+    char search_path[MAX_PATH_];
+    snprintf(search_path, MAX_PATH_, "%s\\*", folder);
 
     WIN32_FIND_DATAA find_data;
     HANDLE hFind = FindFirstFileA(search_path, &find_data);
     if (hFind == INVALID_HANDLE_VALUE) {
         fprintf(stderr, "Failed to open folder: %s\n", folder);
         *out_count = 0;
-        return NULL;
+        return nullptr;
     }
 
     size_t capacity = 8;
@@ -23,7 +25,7 @@ char **get_files_in_folder(const char *folder, size_t *out_count) {
     if (!files) {
         FindClose(hFind);
         *out_count = 0;
-        return NULL;
+        return nullptr;
     }
 
     do {
@@ -40,8 +42,8 @@ char **get_files_in_folder(const char *folder, size_t *out_count) {
             }
 
             // Build full path
-            char fullpath[MAX_PATH];
-            snprintf(fullpath, MAX_PATH, "%s\\%s", folder, find_data.cFileName);
+            char fullpath[MAX_PATH_];
+            snprintf(fullpath, MAX_PATH_, "%s\\%s", folder, find_data.cFileName);
 
             files[count++] = _strdup(fullpath);
         }
@@ -61,10 +63,9 @@ void free_files(char **files, size_t count) {
 }
 
 int main(void) {
-    char **files;
     size_t count;
 
-    files = get_files_in_folder("..\\songs", &count);
+    char **files = get_files_in_folder("..\\songs", &count);
     for (size_t i = 0; i < count; ++i) {
         printf("File: %s\n", files[i]);
     }
@@ -76,6 +77,6 @@ int main(void) {
         add_document(&inverted_index, files[i]);
     }
     index_print(&inverted_index);
-    free_files(files, count);
+    if (files) free_files(files, count);
     return 0;
 }
