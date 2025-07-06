@@ -70,7 +70,6 @@ int main(void) {
         printf("File: %s\n", files[i]);
     }
 
-
     InvertedIndex inverted_index = inverted_index_new();
 
     for (size_t i = 0; i < count; ++i) {

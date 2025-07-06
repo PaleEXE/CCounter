@@ -51,14 +51,14 @@ bool compare(const Str *str1, const Str *str2) {
 
 void resize(ListStr *list) {
     size_t new_capacity = list->capacity * 2;
-    Str *newItems = malloc(sizeof(Str) * new_capacity);
+    Str *new_items = malloc(sizeof(Str) * new_capacity);
 
     if (list->items != NULL) {
-        memcpy(newItems, list->items, sizeof(Str) * list->count);
+        memcpy(new_items, list->items, sizeof(Str) * list->count);
         free(list->items);
     }
 
-    list->items = newItems;
+    list->items = new_items;
     list->capacity = new_capacity;
 }
 
@@ -80,12 +80,12 @@ void normalize(char *str) {
     if (!str) return;
 
     while (*str) {
-        unsigned char c = (unsigned char)*str;
+        unsigned char c = (unsigned char) *str;
 
         if (c < 32 || c > 126) {
             *str = ' ';
         } else {
-            *str = (char)tolower(c);
+            *str = (char) tolower(c);
         }
 
         str++;
@@ -103,7 +103,7 @@ ListStr split(char *text) {
     ListStr rizz = list_new();
 
     size_t len = strlen(text);
-    char *copy = malloc(len + 1);  // +1 for null terminator
+    char *copy = malloc(len + 1); // +1 for null terminator
     if (!copy) {
         fprintf(stderr, "Failed to allocate memory\n");
         exit(1);
