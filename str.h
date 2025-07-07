@@ -26,6 +26,8 @@ ListStr list_with_capacity(size_t capacity);
 
 void str_print(const Str *str);
 
+void str_print_fix(const Str *str, size_t fix);
+
 bool compare(const Str *str1, const Str *str2);
 
 void resize(ListStr *list);

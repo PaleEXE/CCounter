@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 Counter counter_new() {
     return (Counter){
@@ -100,7 +101,7 @@ char *read_file(const char *path) {
 
     if (file == NULL) {
         fprintf(stderr, "ERROR: cannot open file: %s\n", path);
-        return NULL;
+        return nullptr;
     }
 
     fseek(file, 0, SEEK_END);
@@ -218,6 +219,14 @@ void add_document(InvertedIndex *inverted_index, char *file_path) {
     free(content);
 }
 
+Posting *get_posting(InvertedIndex *inverted_index, Str *term) {
+    size_t pos;
+    if (is_here_term(inverted_index, term, &pos)) {
+        return &inverted_index->index[pos];
+    }
+    return nullptr;
+}
+
 void index_print(const InvertedIndex *inverted_index) {
     // Print header
     printf("╔══════════════════════════════════════╗\n");
@@ -254,4 +263,100 @@ void index_print(const InvertedIndex *inverted_index) {
             printf("\n");
         }
     }
+}
+
+ListFloat list_float_new(size_t capacity) {
+    float *items = (float *) calloc(capacity, capacity * sizeof(float));
+    ListFloat list = (ListFloat){.items = items, .capacity = capacity, .count = 0};
+    return list;
+}
+
+void list_float_resize(ListFloat *list) {
+    float *new_items = (float *) malloc(list->capacity * 2 * sizeof(float));
+    memcpy(new_items, list->items, list->count * sizeof(float));
+    free(list->items);
+    list->items = new_items;
+    list->capacity *= 2;
+}
+
+void list_float_append(ListFloat *list, float value) {
+    if (list->count == list->capacity) list_float_resize(list);
+    list->items[list->count++] = value;
+}
+
+void list_float_insert(ListFloat *list, size_t index, float value) {
+    if (list->count == list->capacity) list_float_resize(list);
+    if (index > list->count) return;
+    for (size_t i = list->count; i > index; --i)
+        list->items[i] = list->items[i - 1];
+    list->items[index] = value;
+    list->count++;
+}
+
+void list_float_remove(ListFloat *list, size_t index) {
+    if (index >= list->count) return;
+    for (size_t i = index; i < list->count - 1; ++i)
+        list->items[i] = list->items[i + 1];
+    list->count--;
+}
+
+void list_float_print(const ListFloat *list) {
+    for (size_t i = 0; i < list->count; ++i)
+        printf("%f\n", list->items[i]);
+}
+
+ListFloat calc_tf_idf(InvertedIndex *inverted_index, char *query) {
+    ListFloat rizz = list_float_new(inverted_index->collection.count);
+    rizz.count = rizz.capacity;
+
+    ListStr terms = split(query);
+
+    for (size_t i = 0; i < terms.count; ++i) {
+        Str *term = &terms.items[i];
+        Posting *term_posting = get_posting(inverted_index, term);
+        if (term_posting == nullptr) {
+            continue;
+        }
+
+        for (size_t j = 0; j < term_posting->doc_freq; ++j) {
+            rizz.items[term_posting->items[j].doc_id] +=
+                    log10f((float) term_posting->items[j].freq) *
+                    log10f((float) inverted_index->count / (float) term_posting->doc_freq);
+        }
+    }
+
+    return rizz;
+}
+
+void scores_print(InvertedIndex *inverted_index, ListFloat *scores) {
+    typedef struct {
+        size_t doc_id;
+        float score;
+    } DocScore;
+
+    DocScore *entries = malloc(scores->count * sizeof(DocScore));
+    for (size_t i = 0; i < scores->count; ++i) {
+        entries[i].doc_id = i;
+        entries[i].score = scores->items[i];
+    }
+
+    for (size_t i = 0; i < scores->count - 1; ++i) {
+        for (size_t j = i + 1; j < scores->count; ++j) {
+            if (entries[j].score > entries[i].score) {
+                DocScore tmp = entries[i];
+                entries[i] = entries[j];
+                entries[j] = tmp;
+            }
+        }
+    }
+
+    printf("%-*s  %s\n", 36, "Document", "Score");
+    printf("------------------------------------  --------\n");
+
+    for (size_t i = 0; i < scores->count; ++i) {
+        str_print_fix(&inverted_index->collection.items[entries[i].doc_id], 36);
+        printf("  %f\n", entries[i].score);
+    }
+
+    free(entries);
 }

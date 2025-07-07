@@ -39,6 +39,11 @@ typedef struct {
     size_t capacity, count;
 } InvertedIndex;
 
+typedef struct ListFloat {
+    float *items;
+    size_t capacity, count;
+} ListFloat;
+
 Counter counter_new();
 
 void counter_resize(Counter *counter);
@@ -62,5 +67,21 @@ bool is_here_term(const InvertedIndex *inverted_index, const Str *term, size_t *
 void add_document(InvertedIndex *inverted_index, char *file_path);
 
 void index_print(const InvertedIndex *inverted_index);
+
+ListFloat list_float_new(size_t capacity);
+
+void list_float_resize(ListFloat *list);
+
+void list_float_append(ListFloat *list, float value);
+
+void list_float_insert(ListFloat *list, size_t index, float value);
+
+void list_float_remove(ListFloat *list, size_t index);
+
+void list_float_print(const ListFloat *list);
+
+ListFloat calc_tf_idf(InvertedIndex *inverted_index, char *query);
+
+void scores_print(InvertedIndex *inverted_index, ListFloat *scores);
 
 #endif //COUNTER_H

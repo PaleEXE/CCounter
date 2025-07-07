@@ -37,6 +37,12 @@ void str_print(const Str *str) {
     fwrite(str->content, 1, str->length, stdout);
 }
 
+void str_print_fix(const Str *str, size_t fix) {
+    fwrite(str->content, 1, str->length, stdout);
+    for (size_t i = str->length; i < fix; ++i)
+        putchar(' ');
+}
+
 bool compare(const Str *str1, const Str *str2) {
     if (str1->length != str2->length)
         return false;
@@ -122,7 +128,7 @@ ListStr split(char *text) {
             .length = token_len
         };
         append(&rizz, word);
-        token = strtok(NULL, delims);
+        token = strtok(nullptr, delims);
     }
 
     return rizz;

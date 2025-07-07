@@ -76,6 +76,13 @@ int main(void) {
         add_document(&inverted_index, files[i]);
     }
     index_print(&inverted_index);
+
+    ListFloat rizz =
+        calc_tf_idf(&inverted_index, "love lovedrug");
+
+    scores_print(&inverted_index, &rizz);
+
     if (files) free_files(files, count);
+    free(rizz.items);
     return 0;
 }
