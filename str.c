@@ -43,6 +43,12 @@ void str_print_fix(const Str *str, size_t fix) {
         putchar(' ');
 }
 
+void str_fprint_fix(const Str *str, size_t fix, FILE *fout) {
+    fwrite(str->content, 1, str->length, fout);
+    for (size_t i = str->length; i < fix; ++i)
+        putc(' ', fout);
+}
+
 bool compare(const Str *str1, const Str *str2) {
     if (str1->length != str2->length)
         return false;

@@ -5,7 +5,7 @@
 #ifndef STR_H
 #define STR_H
 
-#include <stddef.h>
+#include <stdio.h>
 #define CAPACITY 1024
 
 typedef struct {
@@ -28,6 +28,8 @@ void str_print(const Str *str);
 
 void str_print_fix(const Str *str, size_t fix);
 
+void str_fprint_fix(const Str *str, size_t fix, FILE *fout);
+
 bool compare(const Str *str1, const Str *str2);
 
 void resize(ListStr *list);
@@ -36,6 +38,6 @@ void append(ListStr *list, Str str);
 
 ListStr split(char *text);
 
-void list_print(const ListStr * list);
+void list_print(const ListStr *list);
 
 #endif //STR_H

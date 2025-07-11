@@ -9,6 +9,8 @@
 #include <string.h>
 #include <math.h>
 
+static size_t s_last_doc = 0;
+
 Counter counter_new() {
     return (Counter){
         .items = (Pair *) calloc(CAPACITY, sizeof(Pair)),
@@ -93,8 +95,6 @@ Counter counter_from_list(const ListStr *list) {
     }
     return counter;
 }
-
-static size_t s_last_doc = 0;
 
 char *read_file(const char *path) {
     FILE *file = fopen(path, "r");
@@ -219,7 +219,7 @@ void add_document(InvertedIndex *inverted_index, char *file_path) {
     free(content);
 }
 
-Posting *get_posting(InvertedIndex *inverted_index, Str *term) {
+Posting *get_posting(const InvertedIndex *inverted_index, const Str *term) {
     size_t pos;
     if (is_here_term(inverted_index, term, &pos)) {
         return &inverted_index->index[pos];
@@ -228,44 +228,46 @@ Posting *get_posting(InvertedIndex *inverted_index, Str *term) {
 }
 
 void index_print(const InvertedIndex *inverted_index) {
+    if (!s_file_out) s_file_out = stdout;
     // Print header
-    printf("╔══════════════════════════════════════╗\n");
-    printf("║        INVERTED INDEX (%-3zu docs)     ║\n", inverted_index->collection.count);
-    printf("╚══════════════════════════════════════╝\n\n");
+    fprintf(s_file_out, "╔══════════════════════════════════════╗\n");
+    fprintf(s_file_out, "║        INVERTED INDEX (%-3zu docs)     ║\n", inverted_index->collection.count);
+    fprintf(s_file_out, "╚══════════════════════════════════════╝\n\n");
 
     // Print document collection
-    printf("Document Collection:\n");
+    fprintf(s_file_out, "Document Collection:\n");
     for (size_t i = 0; i < inverted_index->collection.count; ++i) {
-        printf("  [%zu] ", i);
-        str_print(&inverted_index->collection.items[i]);
-        printf("\n");
+        fprintf(s_file_out, "  [%zu] ", i);
+        str_fprint_fix(&inverted_index->collection.items[i], 20, s_file_out);
+        fprintf(s_file_out, "\n");
     }
-    printf("\n");
+    putc('\n', s_file_out);
 
     // Print terms with postings
-    printf("Terms (total %zu):\n", inverted_index->count);
+    fprintf(s_file_out, "s_file_out, Terms (total %zu):\n", inverted_index->count);
     for (size_t i = 0; i < inverted_index->capacity; i++) {
         if (inverted_index->index[i].term.content != NULL) {
             // Print term
-            printf("  • ");
-            str_print(&inverted_index->index[i].term);
-            printf(" (df=%zu): ", inverted_index->index[i].doc_freq);
+            fprintf(s_file_out, "  • ");
+            str_fprint_fix(&inverted_index->index[i].term, 20, s_file_out);
+            fprintf(s_file_out, " (df=%zu): ", inverted_index->index[i].doc_freq);
 
             // Print postings
             for (size_t j = 0; j < inverted_index->index[i].doc_freq; j++) {
-                printf("[%zu:%zu]",
-                       inverted_index->index[i].items[j].doc_id,
-                       inverted_index->index[i].items[j].freq);
+                fprintf(s_file_out,
+                        "[%zu:%zu]",
+                        inverted_index->index[i].items[j].doc_id,
+                        inverted_index->index[i].items[j].freq);
                 if (j < inverted_index->index[i].doc_freq - 1) {
-                    printf(", ");
+                    fprintf(s_file_out, ", ");
                 }
             }
-            printf("\n");
+            putc('\n', s_file_out);
         }
     }
 }
 
-ListFloat list_float_new(size_t capacity) {
+ListFloat list_float_new(const size_t capacity) {
     float *items = (float *) calloc(capacity, capacity * sizeof(float));
     ListFloat list = (ListFloat){.items = items, .capacity = capacity, .count = 0};
     return list;
@@ -279,12 +281,12 @@ void list_float_resize(ListFloat *list) {
     list->capacity *= 2;
 }
 
-void list_float_append(ListFloat *list, float value) {
+void list_float_append(ListFloat *list, const float value) {
     if (list->count == list->capacity) list_float_resize(list);
     list->items[list->count++] = value;
 }
 
-void list_float_insert(ListFloat *list, size_t index, float value) {
+void list_float_insert(ListFloat *list, const size_t index, const float value) {
     if (list->count == list->capacity) list_float_resize(list);
     if (index > list->count) return;
     for (size_t i = list->count; i > index; --i)
@@ -328,7 +330,7 @@ ListFloat calc_tf_idf(InvertedIndex *inverted_index, char *query) {
     return rizz;
 }
 
-void scores_print(InvertedIndex *inverted_index, ListFloat *scores) {
+void scores_print(const InvertedIndex *inverted_index, const ListFloat *scores) {
     typedef struct {
         size_t doc_id;
         float score;
@@ -359,4 +361,8 @@ void scores_print(InvertedIndex *inverted_index, ListFloat *scores) {
     }
 
     free(entries);
+}
+
+void set_output_file(FILE *file) {
+    s_file_out = file;
 }

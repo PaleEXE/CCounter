@@ -5,8 +5,10 @@
 #ifndef COUNTER_H
 #define COUNTER_H
 
-#include <stddef.h>
+#include <stdio.h>
 #include "str.h"
+
+static FILE *s_file_out = nullptr;
 
 typedef struct {
     Str key;
@@ -82,6 +84,9 @@ void list_float_print(const ListFloat *list);
 
 ListFloat calc_tf_idf(InvertedIndex *inverted_index, char *query);
 
-void scores_print(InvertedIndex *inverted_index, ListFloat *scores);
+void scores_print(const InvertedIndex *inverted_index, const ListFloat *scores);
+
+
+void set_output_file(FILE *file);
 
 #endif //COUNTER_H

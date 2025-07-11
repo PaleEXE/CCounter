@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <windows.h>
 #include <stdio.h>
-#include <sys/stat.h>
 #include <string.h>
 
 #define MAX_PATH_ 512
@@ -75,10 +74,14 @@ int main(void) {
     for (size_t i = 0; i < count; ++i) {
         add_document(&inverted_index, files[i]);
     }
+
+    FILE *fout = fopen("../inverted_index.txt", "w");
+    set_output_file(fout);
+
     index_print(&inverted_index);
 
     ListFloat rizz =
-        calc_tf_idf(&inverted_index, "love lovedrug");
+            calc_tf_idf(&inverted_index, "love Louie");
 
     scores_print(&inverted_index, &rizz);
 
