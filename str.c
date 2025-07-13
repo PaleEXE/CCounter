@@ -3,7 +3,7 @@
 //
 
 #include "str.h"
-
+#include "libstemmer_c/include/libstemmer.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -111,17 +111,26 @@ void list_print(const ListStr *list) {
     }
 }
 
-ListStr split(char *text) {
+static struct sb_stemmer *stemmer = nullptr;
+
+ListStr split(const char *text) {
+    if (!stemmer) {
+        stemmer = sb_stemmer_new("english", nullptr);
+        if (!stemmer) {
+            fprintf(stderr, "Failed to initialize stemmer\n");
+            exit(1);
+        }
+    }
+
     ListStr rizz = list_new();
 
     size_t len = strlen(text);
-    char *copy = malloc(len + 1); // +1 for null terminator
+    char *copy = malloc(len + 1);
     if (!copy) {
         fprintf(stderr, "Failed to allocate memory\n");
         exit(1);
     }
-    strcpy(copy, text);
-
+    strcpy(copy, text); // copy the input to preserve original
     normalize(copy);
 
     const char *delims = " \t\n\r-.,!?;:\"'()[]{}<>";
@@ -129,13 +138,32 @@ ListStr split(char *text) {
 
     while (token != NULL) {
         size_t token_len = strlen(token);
+
+        // Stem the token
+        const sb_symbol *stemmed = sb_stemmer_stem(stemmer, (const sb_symbol *) token, (int) token_len);
+        if (!stemmed) {
+            fprintf(stderr, "Stemming failed\n");
+            exit(1);
+        }
+
+        // Allocate memory for the stemmed word
+        char *stemmed_copy = malloc(sb_stemmer_length(stemmer) + 1);
+        if (!stemmed_copy) {
+            fprintf(stderr, "Failed to allocate memory for stemmed token\n");
+            exit(1);
+        }
+        strncpy(stemmed_copy, (const char *) stemmed, sb_stemmer_length(stemmer));
+        stemmed_copy[sb_stemmer_length(stemmer)] = '\0';
+
         Str word = {
-            .content = token,
-            .length = token_len
+            .content = stemmed_copy,
+            .length = sb_stemmer_length(stemmer)
         };
         append(&rizz, word);
+
         token = strtok(nullptr, delims);
     }
 
+    free(copy);
     return rizz;
 }

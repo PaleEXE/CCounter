@@ -36,7 +36,7 @@ void resize(ListStr *list);
 
 void append(ListStr *list, Str str);
 
-ListStr split(char *text);
+ListStr split(const char *text);
 
 void list_print(const ListStr *list);
 
