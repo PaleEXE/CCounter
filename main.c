@@ -80,12 +80,11 @@ int main(void) {
 
     index_print(&inverted_index);
 
-    ListFloat rizz =
-            calc_tf_idf(&inverted_index, "just loves");
+    ListFloat rizz =  calc_tf_idf(&inverted_index, "just");
 
     scores_print(&inverted_index, &rizz);
 
-    rizz = calc_tf_idf(&inverted_index, "JUST LOVE");
+    rizz = calc_tf_idf(&inverted_index, "JUST");
 
     scores_print(&inverted_index, &rizz);
 

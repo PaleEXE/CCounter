@@ -307,7 +307,7 @@ void list_float_print(const ListFloat *list) {
         printf("%f\n", list->items[i]);
 }
 
-ListFloat calc_tf_idf(InvertedIndex *inverted_index, char *query) {
+ListFloat calc_tf_idf(const InvertedIndex *inverted_index, const char *query) {
     ListFloat rizz = list_float_new(inverted_index->collection.count);
     rizz.count = rizz.capacity;
 

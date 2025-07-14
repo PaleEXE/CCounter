@@ -40,4 +40,6 @@ ListStr split(const char *text);
 
 void list_print(const ListStr *list);
 
+void list_free(ListStr *list);
+
 #endif //STR_H
