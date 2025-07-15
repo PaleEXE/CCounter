@@ -48,11 +48,13 @@ typedef struct ListFloat {
 
 Counter counter_new();
 
+Counter counter_from_list(const ListStr *list);
+
 void counter_resize(Counter *counter);
 
 size_t hash(const Str *key, size_t mod);
 
-bool insert(Counter *counter, Str key, size_t val);
+bool insert(Counter *counter, Str *key, size_t val);
 
 size_t get(const Counter *counter, const Str *key);
 

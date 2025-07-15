@@ -20,6 +20,8 @@ typedef struct {
 
 Str to_str(char *str);
 
+Str str_clone(const Str *s);
+
 ListStr list_new();
 
 ListStr list_with_capacity(size_t capacity);

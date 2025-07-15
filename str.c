@@ -16,6 +16,17 @@ Str to_str(char *str) {
     };
 }
 
+Str str_clone(const Str *s) {
+    char *copy = malloc(s->length + 1);
+    if (!copy) {
+        fprintf(stderr, "Failed to clone string\n");
+        exit(1);
+    }
+    memcpy(copy, s->content, s->length);
+    copy[s->length] = '\0';
+    return (Str){.content = copy, .length = s->length};
+}
+
 ListStr list_new(void) {
     Str *items = (Str *) malloc(sizeof(Str) * CAPACITY);
     if (!items) {
@@ -173,23 +184,26 @@ ListStr split(const char *text) {
     char *token = strtok(copy, delims);
 
     while (token != NULL) {
-        const size_t token_len = strlen(token);
+        size_t token_len = strlen(token);
         if (token_len > 0) {
-            const sb_symbol *stemmed = sb_stemmer_stem(stemmer,
-                                                       (const sb_symbol *) token, (int) token_len);
+            const sb_symbol *stemmed = sb_stemmer_stem(
+                stemmer,
+                (const sb_symbol *) token,
+                (int) token_len
+                );
             if (!stemmed) {
                 fprintf(stderr, "Stemming failed for token: %s\n", token);
-                free(copy);
                 list_free(&result);
+                free(copy);
                 return list_new();
             }
 
             size_t stemmed_len = sb_stemmer_length(stemmer);
-            char *stemmed_copy = (char *) malloc(stemmed_len + 1);
+            char *stemmed_copy = malloc(stemmed_len + 1);
             if (!stemmed_copy) {
                 fprintf(stderr, "Failed to allocate memory for stemmed token\n");
-                free(copy);
                 list_free(&result);
+                free(copy);
                 exit(EXIT_FAILURE);
             }
 
@@ -201,6 +215,7 @@ ListStr split(const char *text) {
                        .length = stemmed_len
                    });
         }
+
         token = strtok(nullptr, delims);
     }
 

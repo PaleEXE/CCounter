@@ -63,22 +63,17 @@ void free_files(char **files, size_t count) {
 
 int main(void) {
     size_t count;
+    InvertedIndex inverted_index = inverted_index_new();
 
     char **files = get_files_in_folder("..\\songs", &count);
     for (size_t i = 0; i < count; ++i) {
         printf("File: %s\n", files[i]);
     }
 
-    InvertedIndex inverted_index = inverted_index_new();
 
     for (size_t i = 0; i < count; ++i) {
         add_document(&inverted_index, files[i]);
     }
-
-    FILE *fout = fopen("../inverted_index.txt", "w");
-    set_output_file(fout);
-
-    index_print(&inverted_index);
 
     ListFloat rizz =  calc_tf_idf(&inverted_index, "just");
 

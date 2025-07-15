@@ -9,7 +9,7 @@
 #include <string.h>
 #include <math.h>
 
-static size_t s_last_doc = 0;
+const size_t cap = 16;
 
 Counter counter_new() {
     return (Counter){
@@ -50,16 +50,16 @@ bool is_here(const Counter *counter, const Str *key, size_t *pos) {
     return false;
 }
 
-bool insert(Counter *counter, Str key, size_t val) {
+bool insert(Counter *counter, Str *key, size_t val) {
     if (counter->count == counter->capacity)
         counter_resize(counter);
 
     size_t pos;
-    if (counter->items != NULL && is_here(counter, &key, &pos))
+    if (counter->items != NULL && is_here(counter, key, &pos))
         return false;
 
     counter->items[pos] = (Pair){
-        .key = key,
+        .key = str_clone(key),
         .val = val
     };
     counter->count++;
@@ -89,17 +89,29 @@ void counter_print(const Counter *counter) {
 Counter counter_from_list(const ListStr *list) {
     Counter counter = counter_new();
     for (size_t i = 0; i < list->count; ++i) {
-        if (!insert(&counter, list->items[i], 1)) {
+        if (!insert(&counter, &list->items[i], 1)) {
             *get_mut(&counter, &list->items[i]) += 1;
         }
     }
     return counter;
 }
 
+void counter_free(Counter *counter) {
+    for (size_t i = 0; i < counter->capacity; i++) {
+        if (counter->items[i].key.content) {
+            free(counter->items[i].key.content);
+        }
+    }
+    free(counter->items);
+    counter->items = nullptr;
+    counter->capacity = 0;
+    counter->count = 0;
+}
+
 char *read_file(const char *path) {
     FILE *file = fopen(path, "r");
 
-    if (file == NULL) {
+    if (file == nullptr) {
         fprintf(stderr, "ERROR: cannot open file: %s\n", path);
         return nullptr;
     }
@@ -117,8 +129,6 @@ char *read_file(const char *path) {
 }
 
 InvertedIndex inverted_index_new() {
-    size_t cap = 16;
-
     InvertedIndex inverted_index = (InvertedIndex){
         .collection = list_with_capacity(cap),
         .index = (Posting *) calloc(CAPACITY, sizeof(Posting)),
@@ -155,7 +165,7 @@ bool is_here_term(const InvertedIndex *inverted_index, const Str *term, size_t *
 }
 
 void resize_posting(Posting *posting) {
-    size_t new_capacity = posting->capacity * 2;
+    const size_t new_capacity = posting->capacity * 2;
     TermFreq *new_items = (TermFreq *) calloc(new_capacity, sizeof(TermFreq));
 
     if (new_items != NULL) {
@@ -183,20 +193,22 @@ void append_index(InvertedIndex *inverted_index, const Str *term, const size_t d
     }
 
     size_t pos;
+    Posting posting = (Posting){
+        .term = str_clone(term),
+        .items = (TermFreq *) calloc(cap, sizeof(TermFreq)),
+        .capacity = cap,
+        .doc_freq = 0
+    };
     if (!is_here_term(inverted_index, term, &pos)) {
-        inverted_index->index[pos] = (Posting){
-            .term = *term,
-            .items = (TermFreq *) calloc(16, sizeof(TermFreq)),
-            .capacity = 16,
-            .doc_freq = 0
-        };
-        inverted_index->count++;
+        inverted_index->index[pos] = posting,
+                inverted_index->count++;
     }
 
-    append_posting(&inverted_index->index[pos], (TermFreq){
-                       .doc_id = doc_id,
-                       .freq = freq
-                   });
+    TermFreq tf = (TermFreq){
+        .doc_id = doc_id,
+        .freq = freq
+    };
+    append_posting(&inverted_index->index[pos], tf);
 }
 
 void add_document(InvertedIndex *inverted_index, char *file_path) {
@@ -205,18 +217,17 @@ void add_document(InvertedIndex *inverted_index, char *file_path) {
         free(content);
         return;
     }
-
     ListStr terms = split(content);
-    const Counter terms_counter = counter_from_list(&terms);
+    Counter terms_counter = counter_from_list(&terms);
     append(&inverted_index->collection, to_str(file_path));
+    const size_t doc_id = inverted_index->collection.count - 1;
 
-    for (size_t i = 0; i < terms_counter.count; ++i) {
+    for (size_t i = 0; i < terms_counter.capacity; ++i) {
         if (terms_counter.items[i].key.content == NULL) continue;
-        append_index(inverted_index, &terms_counter.items[i].key, s_last_doc, terms_counter.items[i].val);
+        append_index(inverted_index, &terms_counter.items[i].key, doc_id, terms_counter.items[i].val);
     }
-
-    s_last_doc++;
     free(content);
+    counter_free(&terms_counter);
 }
 
 Posting *get_posting(const InvertedIndex *inverted_index, const Str *term) {
@@ -268,7 +279,7 @@ void index_print(const InvertedIndex *inverted_index) {
 }
 
 ListFloat list_float_new(const size_t capacity) {
-    float *items = (float *) calloc(capacity, capacity * sizeof(float));
+    float *items = (float *) calloc(capacity, sizeof(float));
     ListFloat list = (ListFloat){.items = items, .capacity = capacity, .count = 0};
     return list;
 }
@@ -319,11 +330,11 @@ ListFloat calc_tf_idf(const InvertedIndex *inverted_index, const char *query) {
         if (term_posting == nullptr) {
             continue;
         }
-
         for (size_t j = 0; j < term_posting->doc_freq; ++j) {
             rizz.items[term_posting->items[j].doc_id] +=
                     log10f((float) term_posting->items[j].freq) *
-                    log10f((float) inverted_index->count / (float) term_posting->doc_freq);
+                    log10f((float) inverted_index->collection.count /
+                           (float) term_posting->doc_freq);
         }
     }
 
