@@ -75,8 +75,11 @@ int main(void) {
         add_document(&inverted_index, files[i]);
     }
 
-    ListFloat rizz =  calc_tf_idf(&inverted_index, "just");
+    FILE * outf = fopen("../inverted_index.txt", "w");
+    set_output_file(outf);
+    index_print(&inverted_index);
 
+    ListFloat rizz = calc_tf_idf(&inverted_index, "just");
     scores_print(&inverted_index, &rizz);
 
     rizz = calc_tf_idf(&inverted_index, "JUST");
