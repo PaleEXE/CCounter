@@ -38,10 +38,12 @@ void resize(ListStr *list);
 
 void append(ListStr *list, Str str);
 
-ListStr split(const char *text);
+ListStr split(char *text, bool do_copy);
 
 void list_print(const ListStr *list);
 
 void list_free(ListStr *list);
+
+void list_shallow_free(ListStr *list);
 
 #endif //STR_H

@@ -59,7 +59,7 @@ bool insert(Counter *counter, Str *key, size_t val) {
         return false;
 
     counter->items[pos] = (Pair){
-        .key = str_clone(key),
+        .key = *key,
         .val = val
     };
     counter->count++;
@@ -97,11 +97,22 @@ Counter counter_from_list(const ListStr *list) {
 }
 
 void counter_free(Counter *counter) {
+    if (!counter) return;
+
     for (size_t i = 0; i < counter->capacity; i++) {
         if (counter->items[i].key.content) {
             free(counter->items[i].key.content);
         }
     }
+    free(counter->items);
+    counter->items = nullptr;
+    counter->capacity = 0;
+    counter->count = 0;
+}
+
+void counter_shallow_free(Counter *counter) {
+    if (!counter) return;
+
     free(counter->items);
     counter->items = nullptr;
     counter->capacity = 0;
@@ -194,7 +205,7 @@ void append_index(InvertedIndex *inverted_index, const Str *term, const size_t d
 
     size_t pos;
     Posting posting = (Posting){
-        .term = str_clone(term),
+        .term = *term,
         .items = (TermFreq *) calloc(cap, sizeof(TermFreq)),
         .capacity = cap,
         .doc_freq = 0
@@ -217,7 +228,8 @@ void add_document(InvertedIndex *inverted_index, char *file_path) {
         free(content);
         return;
     }
-    ListStr terms = split(content);
+
+    ListStr terms = split(content, false);
     Counter terms_counter = counter_from_list(&terms);
     append(&inverted_index->collection, to_str(file_path));
     const size_t doc_id = inverted_index->collection.count - 1;
@@ -227,7 +239,8 @@ void add_document(InvertedIndex *inverted_index, char *file_path) {
         append_index(inverted_index, &terms_counter.items[i].key, doc_id, terms_counter.items[i].val);
     }
     free(content);
-    counter_free(&terms_counter);
+    list_shallow_free(&terms);
+    counter_shallow_free(&terms_counter);
 }
 
 Posting *get_posting(const InvertedIndex *inverted_index, const Str *term) {
@@ -318,11 +331,11 @@ void list_float_print(const ListFloat *list) {
         printf("%f\n", list->items[i]);
 }
 
-ListFloat calc_tf_idf(const InvertedIndex *inverted_index, const char *query) {
+ListFloat calc_tf_idf(const InvertedIndex *inverted_index, char *query) {
     ListFloat rizz = list_float_new(inverted_index->collection.count);
     rizz.count = rizz.capacity;
 
-    ListStr terms = split(query);
+    ListStr terms = split(query, true);
 
     for (size_t i = 0; i < terms.count; ++i) {
         Str *term = &terms.items[i];

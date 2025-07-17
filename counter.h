@@ -84,7 +84,7 @@ void list_float_remove(ListFloat *list, size_t index);
 
 void list_float_print(const ListFloat *list);
 
-ListFloat calc_tf_idf(const InvertedIndex *inverted_index, const char *query);
+ListFloat calc_tf_idf(const InvertedIndex *inverted_index, char *query);
 
 void scores_print(const InvertedIndex *inverted_index, const ListFloat *scores);
 

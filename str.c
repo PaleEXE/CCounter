@@ -149,6 +149,15 @@ void list_free(ListStr *list) {
     list->count = 0;
 }
 
+void list_shallow_free(ListStr *list) {
+    if (!list) return;
+
+    free(list->items);
+    list->items = nullptr;
+    list->capacity = 0;
+    list->count = 0;
+}
+
 void stemmer_create(void) {
     if (!stemmer) {
         stemmer = sb_stemmer_new("english", nullptr);
@@ -166,17 +175,17 @@ void stemmer_free(void) {
     }
 }
 
-ListStr split(const char *text) {
+ListStr split(char *text, bool do_copy) {
     if (!text) return list_new();
+
+    char *copy = text;
+    if (do_copy) copy = strdup(text);
+    if (!copy) {
+        fprintf(stderr, "Faild to duplicate Text");
+    }
 
     stemmer_create();
     ListStr result = list_new();
-
-    char *copy = strdup(text);
-    if (!copy) {
-        fprintf(stderr, "Failed to duplicate string\n");
-        exit(EXIT_FAILURE);
-    }
 
     normalize(copy);
 
@@ -190,7 +199,7 @@ ListStr split(const char *text) {
                 stemmer,
                 (const sb_symbol *) token,
                 (int) token_len
-                );
+            );
             if (!stemmed) {
                 fprintf(stderr, "Stemming failed for token: %s\n", token);
                 list_free(&result);
@@ -218,7 +227,7 @@ ListStr split(const char *text) {
 
         token = strtok(nullptr, delims);
     }
+    if (do_copy) free(copy);
 
-    free(copy);
     return result;
 }
