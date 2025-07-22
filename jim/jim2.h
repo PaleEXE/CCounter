@@ -9,7 +9,7 @@
 #define JIM_H_
 
 #ifndef JIM_SCOPES_CAPACITY
-#define JIM_SCOPES_CAPACITY 1000000
+#define JIM_SCOPES_CAPACITY 128
 #endif // JIM_SCOPES_CAPACITY
 
 #include <assert.h>
