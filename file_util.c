@@ -81,7 +81,7 @@ void free_files(char **files, size_t count) {
 }
 
 void index_dump_json(const InvertedIndex *inverted_index, const char *file_path) {
-    Jim jim = {.pp = 4};  // Pretty print with 4 spaces
+    Jim jim = {.pp = 4}; // Pretty print with 4 spaces
 
     jim_object_begin(&jim);
 
@@ -92,6 +92,15 @@ void index_dump_json(const InvertedIndex *inverted_index, const char *file_path)
         jim_string(&jim, inverted_index->collection.items[i].content);
     }
     jim_array_end(&jim);
+
+    // Statistics
+    jim_member_key(&jim, "stats");
+    jim_object_begin(&jim);
+    jim_member_key(&jim, "document_count");
+    jim_integer(&jim, inverted_index->collection.count);
+    jim_member_key(&jim, "term_count");
+    jim_integer(&jim, inverted_index->count);
+    jim_object_end(&jim);
 
     // Terms index
     jim_member_key(&jim, "index");
@@ -112,15 +121,6 @@ void index_dump_json(const InvertedIndex *inverted_index, const char *file_path)
             jim_array_end(&jim);
         }
     }
-    jim_object_end(&jim);
-
-    // Statistics
-    jim_member_key(&jim, "stats");
-    jim_object_begin(&jim);
-    jim_member_key(&jim, "document_count");
-    jim_integer(&jim, inverted_index->collection.count);
-    jim_member_key(&jim, "term_count");
-    jim_integer(&jim, inverted_index->count);
     jim_object_end(&jim);
 
     jim_object_end(&jim);

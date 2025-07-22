@@ -24,6 +24,10 @@
         "..\\songs\\Trance.txt",
         "..\\songs\\Without Me.txt"
     ],
+    "stats": {
+        "document_count": 23,
+        "term_count": 1647
+    },
     "index": {
         "downstair": [
             [
@@ -16787,9 +16791,5 @@
                 3
             ]
         ]
-    },
-    "stats": {
-        "document_count": 23,
-        "term_count": 1647
     }
 }
