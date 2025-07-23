@@ -21,7 +21,7 @@ int main(void) {
     ListFloat rizz = calc_tf_idf(&inverted_index, "just");
     scores_print(&inverted_index, &rizz);
 
-    //index_dump_json(&inverted_index, "../index.json");
+    // index_dump_json(&inverted_index, "../index.json");
 
     // load and dump do not work simultaneously!!!!!
     InvertedIndex inverted_index_loaded = inverted_index_new();
