@@ -1,5 +1,6 @@
 #include "counter.h"
 #include "file_util.h"
+#include <windows.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -21,11 +22,15 @@ int main(void) {
     ListFloat rizz = calc_tf_idf(&inverted_index, "just");
     scores_print(&inverted_index, &rizz);
 
-    rizz = calc_tf_idf(&inverted_index, "JUST");
+    //index_dump_json(&inverted_index, "../index.json");
 
-    scores_print(&inverted_index, &rizz);
+    // load and dump do not work simultaneously!!!!!
+    InvertedIndex inverted_index_loaded = inverted_index_new();
+    index_load_json(&inverted_index_loaded, "../index.json");
 
-    index_dump_json(&inverted_index, "../index.json");
+    rizz = calc_tf_idf(&inverted_index_loaded, "JUST");
+    scores_print(&inverted_index_loaded, &rizz);
+
     if (files) free_files(files, count);
     free(rizz.items);
     return 0;

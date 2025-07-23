@@ -34,3 +34,5 @@ add_executable(c_lion
 
 # Link with stemmer
 target_link_libraries(c_lion stemmer)
+
+# gcc -Wall -Wextra -Wswitch-enum -ggdb -std=c23 -Ilibstemmer_c/include -I./jim -I./thirdparty main.c counter.c str.c file_util.c -Llibstemmer_c/lib -lstemmer -o c_lion

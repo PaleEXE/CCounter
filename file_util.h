@@ -14,4 +14,6 @@ void free_files(char **files, size_t count);
 
 void index_dump_json(const InvertedIndex *inverted_index, const char *file_path);
 
+bool index_load_json(InvertedIndex *inverted_index, const char *file_path);
+
 #endif // FILE_UTIL_H

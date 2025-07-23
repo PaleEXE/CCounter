@@ -68,6 +68,8 @@ void resize_index(InvertedIndex *inverted_index);
 
 bool is_here_term(const InvertedIndex *inverted_index, const Str *term, size_t *pos);
 
+void append_index(InvertedIndex *inverted_index, const Str *term, const size_t doc_id, const size_t freq);
+
 void add_document(InvertedIndex *inverted_index, char *file_path);
 
 void index_print(const InvertedIndex *inverted_index);

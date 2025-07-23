@@ -9,7 +9,7 @@
 #include <string.h>
 #include <math.h>
 
-const size_t cap = 16;
+const size_t cap = 128;
 
 Counter counter_new() {
     return (Counter){
@@ -21,10 +21,27 @@ Counter counter_new() {
 
 void counter_resize(Counter *counter) {
     size_t new_capacity = counter->capacity * 2;
-    Pair *newItems = (Pair *) calloc(new_capacity, sizeof(Pair));
-    memcpy(newItems, counter->items, sizeof(Pair) * counter->capacity);
+    Pair *new_items = calloc(new_capacity, sizeof(Pair));
+
+    for (size_t i = 0; i < counter->capacity; ++i) {
+        if (counter->items[i].key.content == NULL) continue;
+
+        Str key = counter->items[i].key;
+        size_t val = counter->items[i].val;
+
+        size_t idx = hash(&key, new_capacity);
+        while (new_items[idx].key.content != NULL) {
+            idx = (idx + 1) % new_capacity;
+        }
+
+        new_items[idx] = (Pair){
+            .key = key,
+            .val = val
+        };
+    }
+
     free(counter->items);
-    counter->items = newItems;
+    counter->items = new_items;
     counter->capacity = new_capacity;
 }
 
@@ -80,7 +97,7 @@ size_t *get_mut(const Counter *counter, const Str *key) {
 
 void counter_print(const Counter *counter) {
     for (size_t i = 0; i < counter->capacity; ++i)
-        if (counter->items[i].key.content != NULL) {
+        if (counter->items[i].key.content != nullptr) {
             str_print(&counter->items[i].key);
             printf(" \t=> %zu\n", counter->items[i].val);
         }
@@ -151,19 +168,29 @@ InvertedIndex inverted_index_new() {
 
 void resize_index(InvertedIndex *inverted_index) {
     size_t new_capacity = inverted_index->capacity * 2;
-    Posting *new_items = (Posting *) calloc(new_capacity, sizeof(Posting));
+    Posting *new_index = calloc(new_capacity, sizeof(Posting));
 
-    if (new_items != NULL) {
-        memcpy(new_items, inverted_index->index, sizeof(Posting) * inverted_index->capacity);
-        free(inverted_index->index);
-        inverted_index->index = new_items;
-        inverted_index->capacity = new_capacity;
+    for (size_t i = 0; i < inverted_index->capacity; ++i) {
+        Posting old_post = inverted_index->index[i];
+        if (old_post.term.content == NULL) continue;
+
+        size_t idx = hash(&old_post.term, new_capacity);
+        while (new_index[idx].term.content != NULL) {
+            idx = (idx + 1) % new_capacity;
+        }
+
+        new_index[idx] = old_post;
     }
+
+    free(inverted_index->index);
+    inverted_index->index = new_index;
+    inverted_index->capacity = new_capacity;
 }
 
 bool is_here_term(const InvertedIndex *inverted_index, const Str *term, size_t *pos) {
+    if (inverted_index->index == nullptr) return false;
     size_t idx = hash(term, inverted_index->capacity);
-    while (inverted_index->index[idx].term.content != NULL) {
+    while (inverted_index->index[idx].term.content != nullptr) {
         if (compare(&inverted_index->index[idx].term, term)) {
             *pos = idx;
             return true;
@@ -239,8 +266,8 @@ void add_document(InvertedIndex *inverted_index, char *file_path) {
         append_index(inverted_index, &terms_counter.items[i].key, doc_id, terms_counter.items[i].val);
     }
     free(content);
-    list_shallow_free(&terms);
-    counter_shallow_free(&terms_counter);
+    /*list_shallow_free(&terms);
+    counter_shallow_free(&terms_counter);*/
 }
 
 Posting *get_posting(const InvertedIndex *inverted_index, const Str *term) {
@@ -292,8 +319,11 @@ void index_print(const InvertedIndex *inverted_index) {
 }
 
 ListFloat list_float_new(const size_t capacity) {
-    float *items = (float *) calloc(capacity, sizeof(float));
-    ListFloat list = (ListFloat){.items = items, .capacity = capacity, .count = 0};
+    ListFloat list = (ListFloat){
+        .items = (float *) calloc(capacity, sizeof(float)),
+        .capacity = capacity,
+        .count = 0
+    };
     return list;
 }
 
