@@ -192,7 +192,7 @@ ListStr split(char *text, bool do_copy) {
     const char *delims = " \t\n\r-.,!?;:\"'()[]{}<>";
     char *token = strtok(copy, delims);
 
-    while (token != NULL) {
+    while (token != nullptr) {
         size_t token_len = strlen(token);
         if (token_len > 0) {
             const sb_symbol *stemmed = sb_stemmer_stem(

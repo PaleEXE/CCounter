@@ -24,13 +24,13 @@ void counter_resize(Counter *counter) {
     Pair *new_items = calloc(new_capacity, sizeof(Pair));
 
     for (size_t i = 0; i < counter->capacity; ++i) {
-        if (counter->items[i].key.content == NULL) continue;
+        if (counter->items[i].key.content == nullptr) continue;
 
         Str key = counter->items[i].key;
         size_t val = counter->items[i].val;
 
         size_t idx = hash(&key, new_capacity);
-        while (new_items[idx].key.content != NULL) {
+        while (new_items[idx].key.content != nullptr) {
             idx = (idx + 1) % new_capacity;
         }
 
@@ -56,7 +56,7 @@ size_t hash(const Str *key, size_t mod) {
 bool is_here(const Counter *counter, const Str *key, size_t *pos) {
     size_t idx = hash(key, counter->capacity);
 
-    while (counter->items[idx].key.content != NULL) {
+    while (counter->items[idx].key.content != nullptr) {
         if (compare(&counter->items[idx].key, key)) {
             *pos = idx;
             return true; // already exists
@@ -72,7 +72,7 @@ bool insert(Counter *counter, Str *key, size_t val) {
         counter_resize(counter);
 
     size_t pos;
-    if (counter->items != NULL && is_here(counter, key, &pos))
+    if (counter->items != nullptr && is_here(counter, key, &pos))
         return false;
 
     counter->items[pos] = (Pair){
@@ -172,10 +172,10 @@ void resize_index(InvertedIndex *inverted_index) {
 
     for (size_t i = 0; i < inverted_index->capacity; ++i) {
         Posting old_post = inverted_index->index[i];
-        if (old_post.term.content == NULL) continue;
+        if (old_post.term.content == nullptr) continue;
 
         size_t idx = hash(&old_post.term, new_capacity);
-        while (new_index[idx].term.content != NULL) {
+        while (new_index[idx].term.content != nullptr) {
             idx = (idx + 1) % new_capacity;
         }
 
@@ -206,7 +206,7 @@ void resize_posting(Posting *posting) {
     const size_t new_capacity = posting->capacity * 2;
     TermFreq *new_items = (TermFreq *) calloc(new_capacity, sizeof(TermFreq));
 
-    if (new_items != NULL) {
+    if (new_items != nullptr) {
         memcpy(new_items, posting->items, sizeof(TermFreq) * posting->doc_freq);
         free(posting->items);
         posting->items = new_items;
@@ -226,7 +226,7 @@ void append_index(InvertedIndex *inverted_index, const Str *term, const size_t d
     if (inverted_index->capacity == inverted_index->count) {
         resize_index(inverted_index);
     }
-    if (inverted_index->index == NULL) {
+    if (inverted_index->index == nullptr) {
         return;
     }
 
@@ -251,7 +251,7 @@ void append_index(InvertedIndex *inverted_index, const Str *term, const size_t d
 
 void add_document(InvertedIndex *inverted_index, char *file_path) {
     char *content = read_file(file_path);
-    if (content == NULL) {
+    if (content == nullptr) {
         free(content);
         return;
     }
@@ -262,7 +262,7 @@ void add_document(InvertedIndex *inverted_index, char *file_path) {
     const size_t doc_id = inverted_index->collection.count - 1;
 
     for (size_t i = 0; i < terms_counter.capacity; ++i) {
-        if (terms_counter.items[i].key.content == NULL) continue;
+        if (terms_counter.items[i].key.content == nullptr) continue;
         append_index(inverted_index, &terms_counter.items[i].key, doc_id, terms_counter.items[i].val);
     }
     free(content);
@@ -297,7 +297,7 @@ void index_print(const InvertedIndex *inverted_index) {
     // Print terms with postings
     fprintf(s_file_out, "s_file_out, Terms (total %zu):\n", inverted_index->count);
     for (size_t i = 0; i < inverted_index->capacity; i++) {
-        if (inverted_index->index[i].term.content != NULL) {
+        if (inverted_index->index[i].term.content != nullptr) {
             // Print term
             fprintf(s_file_out, "  • ");
             str_fprint_fix(&inverted_index->index[i].term, 20, s_file_out);

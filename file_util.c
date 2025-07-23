@@ -87,7 +87,7 @@ void free_files(char **files, size_t count) {
 
 void index_dump_json(const InvertedIndex *inverted_index, const char *file_path) {
     Jim jim = {
-        .pp = 1
+        .pp = 4
     }; // Pretty print with 4 spaces
 
     jim_object_begin(&jim);
@@ -110,7 +110,7 @@ void index_dump_json(const InvertedIndex *inverted_index, const char *file_path)
     jim_member_key(&jim, "index");
     jim_object_begin(&jim);
     for (size_t i = 0; i < inverted_index->capacity; i++) {
-        if (inverted_index->index[i].term.content != NULL) {
+        if (inverted_index->index[i].term.content != nullptr) {
             // Term as key
             jim_member_key(&jim, inverted_index->index[i].term.content);
 

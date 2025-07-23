@@ -1,6 +1,5 @@
 #include "counter.h"
 #include "file_util.h"
-#include <windows.h>
 #include <stdlib.h>
 #include <stdio.h>
 
