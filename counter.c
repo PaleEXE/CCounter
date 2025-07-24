@@ -67,7 +67,7 @@ bool is_here(const Counter *counter, const Str *key, size_t *pos) {
     return false;
 }
 
-bool insert(Counter *counter, Str *key, size_t val) {
+bool insert(Counter *counter, const Str *key, size_t val) {
     if (counter->count == counter->capacity)
         counter_resize(counter);
 
@@ -76,7 +76,7 @@ bool insert(Counter *counter, Str *key, size_t val) {
         return false;
 
     counter->items[pos] = (Pair){
-        .key = *key,
+        .key = str_clone(key),
         .val = val
     };
     counter->count++;
@@ -232,7 +232,7 @@ void append_index(InvertedIndex *inverted_index, const Str *term, const size_t d
 
     size_t pos;
     Posting posting = (Posting){
-        .term = *term,
+        .term = str_clone(term),
         .items = (TermFreq *) calloc(cap, sizeof(TermFreq)),
         .capacity = cap,
         .doc_freq = 0
@@ -266,8 +266,8 @@ void add_document(InvertedIndex *inverted_index, char *file_path) {
         append_index(inverted_index, &terms_counter.items[i].key, doc_id, terms_counter.items[i].val);
     }
     free(content);
-    /*list_shallow_free(&terms);
-    counter_shallow_free(&terms_counter);*/
+    list_free(&terms);
+    counter_free(&terms_counter);
 }
 
 Posting *get_posting(const InvertedIndex *inverted_index, const Str *term) {
