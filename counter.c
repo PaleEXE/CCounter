@@ -188,13 +188,14 @@ void resize_index(InvertedIndex *inverted_index) {
 }
 
 bool is_here_term(const InvertedIndex *inverted_index, const Str *term, size_t *pos) {
-    if (inverted_index->index == nullptr) return false;
     size_t idx = hash(term, inverted_index->capacity);
+
     while (inverted_index->index[idx].term.content != nullptr) {
         if (compare(&inverted_index->index[idx].term, term)) {
             *pos = idx;
             return true;
         }
+
         idx = (idx + 1) % inverted_index->capacity;
     }
 
@@ -231,17 +232,16 @@ void append_index(InvertedIndex *inverted_index, const Str *term, const size_t d
     }
 
     size_t pos;
-    Posting posting = (Posting){
-        .term = str_clone(term),
-        .items = (TermFreq *) calloc(cap, sizeof(TermFreq)),
-        .capacity = cap,
-        .doc_freq = 0
-    };
     if (!is_here_term(inverted_index, term, &pos)) {
-        inverted_index->index[pos] = posting,
-                inverted_index->count++;
+        Posting posting = (Posting){
+            .term = str_clone(term),
+            .items = (TermFreq *) calloc(cap, sizeof(TermFreq)),
+            .capacity = cap,
+            .doc_freq = 0
+        };
+        inverted_index->index[pos] = posting;
+        inverted_index->count++;
     }
-
     TermFreq tf = (TermFreq){
         .doc_id = doc_id,
         .freq = freq
@@ -276,6 +276,14 @@ Posting *get_posting(const InvertedIndex *inverted_index, const Str *term) {
         return &inverted_index->index[pos];
     }
     return nullptr;
+}
+
+void index_terms_print(const InvertedIndex *inverted_index) {
+    for (size_t i = 0; i < inverted_index->capacity; ++i) {
+        if (inverted_index->index[i].term.content == nullptr) continue;
+        str_print_fix(&inverted_index->index[i].term, 20);
+        printf("%zu\n", i);
+    }
 }
 
 void index_print(const InvertedIndex *inverted_index) {

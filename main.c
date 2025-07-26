@@ -18,16 +18,16 @@ int main(void) {
     set_output_file(outf);
     index_print(&inverted_index);
 
-    ListFloat rizz = calc_tf_idf(&inverted_index, "she is a killer queen");
+    ListFloat rizz = calc_tf_idf(&inverted_index, "love car paris lovedrug");
     scores_print(&inverted_index, &rizz);
 
-    /*index_dump_json(&inverted_index, "../index.json");*/
+    // index_dump_json(&inverted_index, "../index.json");
 
     // load and dump do not work simultaneously!!!!!
     InvertedIndex inverted_index_loaded = inverted_index_new();
     if (!index_load_json(&inverted_index_loaded, "../index.json")) return 1;
 
-    rizz = calc_tf_idf(&inverted_index_loaded, "she is a killer queen");
+    rizz = calc_tf_idf(&inverted_index_loaded, "love car paris lovedrug");
     scores_print(&inverted_index_loaded, &rizz);
 
     if (files) free_files(files, count);

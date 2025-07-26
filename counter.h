@@ -74,6 +74,8 @@ void add_document(InvertedIndex *inverted_index, char *file_path);
 
 void index_print(const InvertedIndex *inverted_index);
 
+void index_terms_print(const InvertedIndex *inverted_index);
+
 ListFloat list_float_new(size_t capacity);
 
 void list_float_resize(ListFloat *list);

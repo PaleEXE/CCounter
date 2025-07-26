@@ -6,7 +6,7 @@
 #define STR_H
 
 #include <stdio.h>
-#define CAPACITY 1024
+#define CAPACITY 16384
 
 typedef struct {
     char *content;

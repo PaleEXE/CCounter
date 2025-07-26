@@ -139,7 +139,7 @@ void index_dump_json(const InvertedIndex *inverted_index, const char *file_path)
 }
 
 bool index_load_json(InvertedIndex *inverted_index, const char *file_path) {
-    String_Builder sb = {};
+    String_Builder sb = {0};
     Jimp jimp = {.string_capacity = 0};
     Str temp;
 
